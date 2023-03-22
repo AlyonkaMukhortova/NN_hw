@@ -62,5 +62,9 @@ rows1 = np.where(sigma == 1)
 rows2 = np.where(sigma == -1)
 X1 = X[rows1, :]
 X2 = X[rows2, :]
+x = np.array([0, 0.4, 0.7, 1.0])
+y = -(NN.weights[1]) * x - NN.weights[0]
+y = y / NN.weights[2]
+plt.plot(x, y)
 plt.plot(X1.T[1], X1.T[2], 'ro', X2.T[1], X2.T[2], 'b^')
 plt.show()
