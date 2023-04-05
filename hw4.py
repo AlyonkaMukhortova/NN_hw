@@ -31,7 +31,7 @@ class NeuralNetwork:
 
         return Y, H
     
-    def update_weights(self, sigma:np.array, input: np.array) -> None:
+    def update_weights(self, sigma:np.array, input: np.array) -> list:
         Y, H = self.partial_result(input)
         delta = [0] * self.num_layers
         dEdW = [0] * self.num_layers
@@ -39,29 +39,32 @@ class NeuralNetwork:
             delta[self.num_layers - i - 1] = ((Y[self.num_layers - i - 1] - sigma) if i == 0 
                                               else (np.delete(self.weights[self.num_layers - i].T, 0, 0) @ 
                                             delta[self.num_layers - i])) * self.act_func_deriv(H[self.num_layers - i - 1])
-            ones = np.array([np.ones(input.shape[1])]).T
-            dEdW[self.num_layers - i - 1] = delta[self.num_layers - i - 1] @ (np.append(ones, Y[self.num_layers - i - 2].T, 1) 
-                                                                              if i != self.num_layers - 1 else input.T)
+            dEdW[self.num_layers - i - 1] = delta[self.num_layers - i - 1] @ (np.append(np.array([np.ones(input.shape[1])]).T, 
+                                            Y[self.num_layers - i - 2].T, 1) if i != self.num_layers - 1 else input.T)
         self.weights = [self.weights[i] - self.alfa * dEdW[i] for i in range(self.num_layers)]
+        return dEdW
         
 
     def train(self, input: np.array, sigma: np.array, betta:float) -> None:
-        while (self.result(input) - sigma >= betta).any():
-            self.update_weights(sigma, input)
-            print(self.result(input))
+        y = 0
+        dEdW = [np.array([100])]
+        while ((np.array([(dedw >= betta).any()  for dedw in dEdW]) == True).any()):
+            y = self.result(input)
+            dEdW = self.update_weights(sigma, input)
 
 
 num_inputs = 3
 num_layers_neuron = [1, 2, 3]
 i = 2
-X = np.array([[5, 6], [1, 2]]).T
-X = np.append([[1, 1]], X, axis = 0)
+X = np.array([[5, 6], [1, 2], [3, 4]]).T
+print(np.array([np.ones(X.shape[1])]), X)
+X = np.append(np.array([np.ones(X.shape[1])]), X, axis = 0)
 print(X)
 NN = NeuralNetwork(2, 0.1, 3, np.array([3, 2, 1]))
 
 print(NN.weights)
 print(NN.result(X))
-sigma = np.array([[-0.5, 0.5]])
-NN.train(X, sigma, 0.1)
+sigma = np.array([[-0.874, 0.0263, 0.457]])
+NN.train(X, sigma, 0.00000001)
 print(NN.weights)
 print(NN.result(X))
