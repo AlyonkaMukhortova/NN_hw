@@ -16,6 +16,7 @@ class NeuralNetwork:
         y = input
         for i in range(self.num_layers):
             y = np.append(np.array([np.ones(input.shape[1])]), np.array(list(map(self.act_func, self.weights[i] @ y))), axis=0)
+        
         return np.delete(y, 0, 0)
     
     def partial_result(self, input: np.array):
@@ -41,16 +42,14 @@ class NeuralNetwork:
             ones = np.array([np.ones(input.shape[1])]).T
             dEdW[self.num_layers - i - 1] = delta[self.num_layers - i - 1] @ (np.append(ones, Y[self.num_layers - i - 2].T, 1) 
                                                                               if i != self.num_layers - 1 else input.T)
+        self.weights = [self.weights[i] - self.alfa * dEdW[i] for i in range(self.num_layers)]
         
-        i = 0
 
-        for i in range(self.num_layers):    
-            self.weights[self.num_layers - i - 1] = self.weights[self.num_layers - i - 1] - self.alfa * dEdW[self.num_layers - i - 1]
-
-    def train(self, input: np.array, sigma: np.array) -> None:
-        while (self.result(input) - sigma >= 0.1).any():
+    def train(self, input: np.array, sigma: np.array, betta:float) -> None:
+        while (self.result(input) - sigma >= betta).any():
             self.update_weights(sigma, input)
             print(self.result(input))
+
 
 num_inputs = 3
 num_layers_neuron = [1, 2, 3]
@@ -58,11 +57,11 @@ i = 2
 X = np.array([[5, 6], [1, 2]]).T
 X = np.append([[1, 1]], X, axis = 0)
 print(X)
-NN = NeuralNetwork(2, 0.01, 3, np.array([3, 2, 1]))
+NN = NeuralNetwork(2, 0.1, 3, np.array([3, 2, 1]))
 
 print(NN.weights)
 print(NN.result(X))
 sigma = np.array([[-0.5, 0.5]])
-NN.train(X, sigma)
+NN.train(X, sigma, 0.1)
 print(NN.weights)
 print(NN.result(X))
